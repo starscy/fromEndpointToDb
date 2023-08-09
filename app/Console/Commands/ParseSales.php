@@ -20,9 +20,19 @@ class ParseSales extends Command
     public function handle()
     {
         //ServiceAPI::callAPI();
-        $sales = new ServiceAPI('sales');
+      //  $sales = new ServiceAPI('sales');
+       // $sales = new ServiceAPI('orders');
 
-        $sales->callAPI();
+        $parserArr = ['incomes'];
+
+        foreach ($parserArr as $tableName) {
+            $service = new ServiceAPI($tableName);
+            $service->callAPI();
+        }
+
+//        $sales = new ServiceAPI('orders');
+//
+//        $sales->callAPI();
 
     }
 }

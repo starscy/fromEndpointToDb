@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Models\Income;
+use App\Models\Order;
 use App\Models\Sale;
 use Illuminate\Support\Facades\Http;
 
@@ -23,6 +25,9 @@ class ServiceAPI
             'dateTo' => date('Y-m-d')
         ]);
         $last_page = $response['meta']['last_page'];
+
+        dd($response->json());
+
         $data = [];
         $data[] = $response->json()['data'];
 
@@ -39,12 +44,24 @@ class ServiceAPI
             } else echo $i . PHP_EOL;
         }
 
-        self::parceJSON($data);
+        if ($this->param === 'sales') {
+
+            self::saleCreate($data);
+        }
+
+        if ($this->param === 'orders') {
+            self::orderCreate($data);
+        }
+
+        if ($this->param === 'incomes') {
+            self::incomeCreate($data);
+        }
+        //
 
         return $response['data'];
     }
 
-    static public function parceJSON(array $data)
+    static public function saleCreate(array $data)
     {
         foreach ($data as $dataAr) {
 
@@ -77,6 +94,46 @@ class ServiceAPI
                     "category" => $itemAr["category"],
                     "brand" => $itemAr["brand"],
                     "is_storno" => $itemAr['is_storno'],
+                ]);
+            }
+        }
+    }
+
+    static public function orderCreate(array $data)
+    {
+        foreach ($data as $dataAr) {
+            foreach ($dataAr as $itemAr) {
+                Order::create([
+                    "g_number" => $itemAr["g_number"],
+                    "date" => $itemAr["date"],
+                    "last_change_date" => $itemAr["last_change_date"],
+                    "supplier_article" => $itemAr["supplier_article"],
+                    "tech_size" => $itemAr["tech_size"],
+                    "barcode" => $itemAr["barcode"],
+                    "total_price" => $itemAr['total_price'],
+                    "discount_percent" => $itemAr['discount_percent'],
+                    "warehouse_name" => $itemAr["warehouse_name"],
+                    "oblast" => $itemAr['oblast'],
+                    "income_id" => $itemAr['income_id'],
+                    "odid" => $itemAr['odid'],
+                    "nm_id" => $itemAr['nm_id'],
+                    "subject" => $itemAr["subject"],
+                    "category" => $itemAr["category"],
+                    "brand" => $itemAr["brand"],
+                    "is_cancel" => $itemAr['is_cancel'],
+                    "cancel_dt" => $itemAr['cancel_dt'],
+                ]);
+            }
+        }
+    }
+
+    static public function incomeCreate (array $data)
+    {
+        dd($data);
+        foreach ($data as $dataAr) {
+            foreach ($dataAr as $itemAr) {
+                Income::create([
+
                 ]);
             }
         }
