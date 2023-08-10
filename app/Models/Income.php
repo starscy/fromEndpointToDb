@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -11,7 +12,21 @@ class Income extends Model
 
     protected $table = 'incomes';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        "income_id",
+        "number",
+        "date",
+        "last_change_date",
+        "supplier_article",
+        "tech_size",
+        "barcode",
+        "quantity",
+        "total_price",
+        "date_close",
+        "warehouse_name",
+        "nm_id",
+        "status"
+    ];
 
     public $timestamps = false;
 

@@ -17,7 +17,7 @@ class ServiceAPI
         $this->param = $param;
     }
 
-    public function callAPI()
+    public function callAPI(): void
     {
         $response = Http::get(env('FETCHED_SERVER_HOST_AND_PORT') . '/api/' . $this->param, [
             'key' => env('MY_ACCESS_TOKEN'),
@@ -25,8 +25,6 @@ class ServiceAPI
             'dateTo' => date('Y-m-d')
         ]);
         $last_page = $response['meta']['last_page'];
-
-        dd($response->json());
 
         $data = [];
         $data[] = $response->json()['data'];
@@ -56,85 +54,32 @@ class ServiceAPI
         if ($this->param === 'incomes') {
             self::incomeCreate($data);
         }
-        //
 
-        return $response['data'];
     }
 
-    static public function saleCreate(array $data)
+    static public function saleCreate(array $data): void
     {
         foreach ($data as $dataAr) {
-
             foreach ($dataAr as $itemAr) {
-                Sale::create([
-                    "g_number" => $itemAr["g_number"],
-                    "date" => $itemAr["date"],
-                    "last_change_date" => $itemAr["last_change_date"],
-                    "supplier_article" => $itemAr["supplier_article"],
-                    "tech_size" => $itemAr["tech_size"],
-                    "barcode" => $itemAr["barcode"],
-                    "total_price" => $itemAr['total_price'],
-                    "discount_percent" => $itemAr['discount_percent'],
-                    "is_supply" => $itemAr['is_supply'],
-                    "is_realization" => $itemAr['is_realization'],
-                    "promo_code_discount" => $itemAr['promo_code_discount'],
-                    "warehouse_name" => $itemAr["warehouse_name"],
-                    "country_name" => $itemAr["country_name"],
-                    "oblast_okrug_name" => $itemAr["oblast_okrug_name"],
-                    "region_name" => $itemAr["region_name"],
-                    "income_id" => $itemAr['income_id'],
-                    "sale_id" => $itemAr["sale_id"],
-                    "odid" => $itemAr['odid'],
-                    "spp" => $itemAr['spp'],
-                    "for_pay" => $itemAr['for_pay'],
-                    "finished_price" => $itemAr['finished_price'],
-                    "price_with_disc" => $itemAr['price_with_disc'],
-                    "nm_id" => $itemAr['nm_id'],
-                    "subject" => $itemAr["subject"],
-                    "category" => $itemAr["category"],
-                    "brand" => $itemAr["brand"],
-                    "is_storno" => $itemAr['is_storno'],
-                ]);
+                Sale::create($itemAr);
             }
         }
     }
 
-    static public function orderCreate(array $data)
+    static public function orderCreate(array $data): void
     {
         foreach ($data as $dataAr) {
             foreach ($dataAr as $itemAr) {
-                Order::create([
-                    "g_number" => $itemAr["g_number"],
-                    "date" => $itemAr["date"],
-                    "last_change_date" => $itemAr["last_change_date"],
-                    "supplier_article" => $itemAr["supplier_article"],
-                    "tech_size" => $itemAr["tech_size"],
-                    "barcode" => $itemAr["barcode"],
-                    "total_price" => $itemAr['total_price'],
-                    "discount_percent" => $itemAr['discount_percent'],
-                    "warehouse_name" => $itemAr["warehouse_name"],
-                    "oblast" => $itemAr['oblast'],
-                    "income_id" => $itemAr['income_id'],
-                    "odid" => $itemAr['odid'],
-                    "nm_id" => $itemAr['nm_id'],
-                    "subject" => $itemAr["subject"],
-                    "category" => $itemAr["category"],
-                    "brand" => $itemAr["brand"],
-                    "is_cancel" => $itemAr['is_cancel'],
-                    "cancel_dt" => $itemAr['cancel_dt'],
-                ]);
+                Order::create($itemAr);
             }
         }
     }
 
-    static public function incomeCreate (array $data)
+    static public function incomeCreate(array $data): void
     {
-        dd($data);
         foreach ($data as $dataAr) {
             foreach ($dataAr as $itemAr) {
-                Income::create([
-
-                ]);
+                Income::create($itemAr);
             }
         }
     }
