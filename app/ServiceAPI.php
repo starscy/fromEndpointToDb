@@ -6,80 +6,87 @@ namespace App;
 use App\Models\Income;
 use App\Models\Order;
 use App\Models\Sale;
+use App\Models\Stock;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class ServiceAPI
 {
     protected string $param;
 
+    protected array $arParams = [];
+
     public function __construct(string $param)
     {
         $this->param = $param;
+
+        if ($param === 'stocks') {
+            $this->arParams = [
+                'dateFrom' => date('Y-m-d'),
+                'dateTo' => date('Y-m-d'),
+            ];
+        } else {
+            $this->arParams = [
+                'dateFrom' => '2000-01-01',
+                'dateTo' => date('Y-m-d'),
+            ];
+        }
     }
 
     public function callAPI(): void
     {
-        $response = Http::get(env('FETCHED_SERVER_HOST_AND_PORT') . '/api/' . $this->param, [
-            'key' => env('MY_ACCESS_TOKEN'),
-            'dateFrom' => '2000-01-01',
-            'dateTo' => date('Y-m-d')
-        ]);
+        $data = $this->fetchDataWithCycle();
+
+        switch ($this->param) {
+            case 'sales':
+                self::modelCreate(new Sale(), $data);
+                break;
+            case 'orders':
+                self::modelCreate(new Order(), $data);
+                break;
+            case 'incomes':
+                self::modelCreate(new Income(), $data);
+                break;
+            case 'stocks' :
+                self::modelCreate(new Stock(), $data);
+                break;
+            default:
+                break;
+        }
+    }
+
+    protected function fetchDataWithCycle():array
+    {
+        $data = [];
+        $response = $this->request($this->arParams);
         $last_page = $response['meta']['last_page'];
 
-        $data = [];
-        $data[] = $response->json()['data'];
-
         for ($i = 1; $i <= $last_page; $i++) {
-            $response = Http::retry(10, 5000)
-                ->get(env('FETCHED_SERVER_HOST_AND_PORT') . '/api/' . $this->param, [
-                    'key' => env('MY_ACCESS_TOKEN'),
-                    'dateFrom' => '2000-01-01',
-                    'dateTo' => date('Y-m-d')
-                ]);
-
+            $response = $this->request($this->arParams, $i);
             if (isset($response) && isset($response->json()['data'])) {
                 $data[] = $response->json()['data'];
-            } else echo $i . PHP_EOL;
+            } else echo 'error in ' . $i . PHP_EOL;
         }
 
-        if ($this->param === 'sales') {
-
-            self::saleCreate($data);
-        }
-
-        if ($this->param === 'orders') {
-            self::orderCreate($data);
-        }
-
-        if ($this->param === 'incomes') {
-            self::incomeCreate($data);
-        }
-
+        return $data;
     }
 
-    static public function saleCreate(array $data): void
+    protected function request(array $params, int $page = 1): Response
+    {
+        return Http::retry(10, 5000)->get(env('FETCHED_SERVER_HOST_AND_PORT') . '/api/' . $this->param, [
+            'key' => env('MY_ACCESS_TOKEN'),
+            'dateFrom' => $params['dateFrom'],
+            'dateTo' => $params['dateTo'],
+            'page' => $page,
+        ]);
+    }
+
+    static public function modelCreate(Model $model, array $data): void
     {
         foreach ($data as $dataAr) {
             foreach ($dataAr as $itemAr) {
-                Sale::create($itemAr);
-            }
-        }
-    }
-
-    static public function orderCreate(array $data): void
-    {
-        foreach ($data as $dataAr) {
-            foreach ($dataAr as $itemAr) {
-                Order::create($itemAr);
-            }
-        }
-    }
-
-    static public function incomeCreate(array $data): void
-    {
-        foreach ($data as $dataAr) {
-            foreach ($dataAr as $itemAr) {
-                Income::create($itemAr);
+                $model::create($itemAr);
             }
         }
     }

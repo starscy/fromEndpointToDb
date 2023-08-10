@@ -11,17 +11,16 @@ class ParseSales extends Command
 
     protected $description = 'Парсер продаж, заказов, акций и доходов';
 
-    public function handle()
+    public function handle():void
     {
-        //ServiceAPI::callAPI();
-      //  $sales = new ServiceAPI('sales');
-       // $sales = new ServiceAPI('orders');
+        $parseNamesArr = [
+            'stocks',
+            'incomes',
+            'sales',
+            'orders',
+        ];
 
-       // $parserArr = ['incomes'];
-
-        $parserArr = ['stocks'];
-
-        foreach ($parserArr as $tableName) {
+        foreach ($parseNamesArr as $tableName) {
             $service = new ServiceAPI($tableName);
             $service->callAPI();
         }
